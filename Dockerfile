@@ -4,13 +4,19 @@ FROM ruby:2.6.6
 RUN curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add - \
     && echo "deb https://dl.yarnpkg.com/debian/ stable main" | tee /etc/apt/sources.list.d/yarn.list
 
+## Install nodejs
+RUN curl -sL https://deb.nodesource.com/setup_10.x | bash - \
+    && apt-get install nodejs
+
 RUN apt-get update -qq && apt-get install -y nodejs yarn postgresql-client
 RUN mkdir /myapp
 WORKDIR /myapp
 COPY Gemfile /myapp/Gemfile
 COPY Gemfile.lock /myapp/Gemfile.lock
 #RUN gem install bundler
-RUN bundle install
+RUN bundle install \
+    && yarn install \
+    && rails webpacker:install
 COPY . /myapp
 
 # Add a script to be executed every time the container starts.
